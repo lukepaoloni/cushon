@@ -160,3 +160,41 @@ Cushon is expanding its financial services to include ISA offerings for retail c
       THEN the response status code should be 200
       AND the response should include my investment details
 ```
+
+### Key Decisions
+
+#### Postgres for the database
+- Financial transactions require absolute data integrity. Postgres offers full ACID compliance, ensuring that each investment transaction is either completely processed or not processed at all - critical for financial data.
+- Postgres also handles concurrent reads and writes better than MySQL, particularly in high-transaction environments like financial applications.
+
+#### REST API Separation Strategy
+- The separation of retail and employer APIs (with the /retail prefix) ensures these two business domains can evolve independently. For example, adding new retail-specific features won't impact employer endpoints
+- The API can support both web and mobile clients because:
+    - It uses standard JSON responses that work across platforms
+    - Authentication is handled via tokens that work in any client environment
+    - The same endpoints can serve both web and mobile interfaces without duplication
+
+#### SQLite for Testing
+- SQLite was chosen for the development cycle because it requires no separate database server setup, reducing developer onboarding time.
+- In production, Postgres would be used for its stronger concurrency controls and better scaling capabilities.
+
+#### Authentication Implementation:
+The auto-authentication middleware provides several benefits:
+- It simulates a logged-in user for all API requests without requiring login screens
+- The middleware injects consistent user context, making testing more reliable
+- It demonstrates authentication concepts without the complexity of implementing a full auth system
+- The approach can be easily replaced with proper authentication in production
+
+#### Customer Type as a Column vs. Separate Tables
+-  Implemented customer types as a database column rather than separate tables to reduce schema complexity and maintenance overhead while improving query performance. This approach simplifies reporting, enables code reuse, and accommodates users transitioning between customer types without data migration.
+
+#### Future-Ready Investment Architecture
+- Designed a flexible data model that supports the current single-fund requirement while enabling future multi-fund selection
+- Created a separate `fund_allocations` table instead of a direct foreign key in the investments table
+- This approach allows adding multiple fund selections without schema changes or data migrations in the future
+- Frontend components use array structures even for single selections to make future expansion seamless
+
+#### Transaction Integrity
+- Implemented database transactions to ensure atomicity of investment operations
+- Used locking to prevent race conditions
+- Added retry mechanism for handling potential deadlocks in high-concurrency scenarios
