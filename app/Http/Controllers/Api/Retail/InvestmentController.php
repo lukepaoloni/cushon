@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\Retail;
 use App\CustomerType;
 use App\DataObjects\Money;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\InvestmentCollection;
+use App\Http\Resources\InvestmentResource;
 use App\Models\Fund;
 use App\Models\Investment;
 use Illuminate\Http\JsonResponse;
@@ -13,6 +15,12 @@ use Illuminate\Http\Response;
 
 class InvestmentController extends Controller
 {
+    public function index()
+    {
+        $investments = auth()->user()->investments()->with('fund')->latest()->paginate(15);
+        return new InvestmentCollection($investments);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -32,17 +40,9 @@ class InvestmentController extends Controller
         $investment->fund()->associate($fund);
         $investment->save();
 
-        return response()->json(['data' =>
-            [
-                'id' => $investment->id,
-                'user_id' => $investment->user_id,
-                'fund_id' => $investment->fund_id,
-                'amount' => $money->getAmountInPounds(),
-                'formatted_amount' => (string) $money,
-                'customer_type' => $investment->customer_type,
-                'created_at' => $investment->created_at,
-                'updated_at' => $investment->updated_at
-            ]
-        ], Response::HTTP_CREATED);
+        return response()->json(
+            ['data' => new InvestmentResource($investment)],
+            Response::HTTP_CREATED
+        );
     }
 }
