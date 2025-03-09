@@ -9,15 +9,17 @@ use App\Http\Resources\InvestmentCollection;
 use App\Http\Resources\InvestmentResource;
 use App\Models\Fund;
 use App\Models\Investment;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class InvestmentController extends Controller
 {
     public function index()
     {
-        $investments = auth()->user()->investments()->with('fund')->latest()->paginate(15);
+        $investments = auth()->user()->investments()->with('allocations')->latest()->paginate(15);
         return new InvestmentCollection($investments);
     }
 
@@ -37,8 +39,9 @@ class InvestmentController extends Controller
         ]);
 
         $investment->user()->associate(auth()->user());
-        $investment->fund()->associate($fund);
         $investment->save();
+
+        $investment->addAllocation($fund, $money);
 
         return response()->json(
             ['data' => new InvestmentResource($investment)],

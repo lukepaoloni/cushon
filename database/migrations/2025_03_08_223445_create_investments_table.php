@@ -15,7 +15,6 @@ return new class extends Migration
         Schema::create('investments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('fund_id')->constrained()->onDelete('restrict');
             $table->unsignedBigInteger('amount')->comment('Amount in pennies');
             $table->enum('customer_type', array_column(CustomerType::cases(), 'value'));
             $table->timestamps();

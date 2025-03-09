@@ -17,8 +17,9 @@ import { Alert, AlertDescription } from "@/Components/ui/alert";
 import { Loader2 } from "lucide-react";
 
 export default function FundsDeposit({ refreshHistory }) {
-    const [selectedFund, setSelectedFund] = useState('');
-    const [selectedAmount, setSelectedAmount] = useState(0);
+    const [fundSelections, setFundSelections] = useState([
+        { fundId: '', amount: 0 }
+    ]);
 
     const { funds, isLoading: isLoadingFunds, error: fundsError, fetchFunds } = useFunds();
     const { createInvestment, isSubmitting, error: investmentError, success } = useInvestment();
@@ -36,14 +37,28 @@ export default function FundsDeposit({ refreshHistory }) {
         }
     }, [success, refreshHistory]);
 
+    const handleFundChange = (fundId) => {
+        const updated = [...fundSelections];
+        updated[0].fundId = fundId;
+        setFundSelections(updated);
+    };
+
+    const handleAmountChange = (amount) => {
+        const updated = [...fundSelections];
+        updated[0].amount = amount;
+        setFundSelections(updated);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (selectedFund && selectedAmount > 0) {
-            const data = await createInvestment(selectedFund, selectedAmount);
+
+        const selection = fundSelections[0];
+
+        if (selection.fundId && selection.amount > 0) {
+            const data = await createInvestment(selection.fundId, selection.amount);
 
             if (data) {
-                setSelectedFund('');
-                setSelectedAmount(0);
+                setFundSelections([{ fundId: '', amount: 0 }]);
             }
         }
     };
@@ -72,12 +87,12 @@ export default function FundsDeposit({ refreshHistory }) {
 
                 <form onSubmit={handleSubmit} className="grid w-full items-center gap-4">
                     <div className="flex flex-col space-y-1.5">
-                        <Label htmlFor="funds">Funds</Label>
+                        <Label htmlFor="funds">Fund Selection</Label>
                         <Select
                             id="funds"
                             name="funds"
-                            value={selectedFund}
-                            onValueChange={val => setSelectedFund(val)}
+                            value={fundSelections[0].fundId}
+                            onValueChange={handleFundChange}
                             disabled={isLoadingFunds}
                         >
                             <SelectTrigger>
@@ -85,7 +100,7 @@ export default function FundsDeposit({ refreshHistory }) {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectGroup>
-                                    <SelectLabel>Funds</SelectLabel>
+                                    <SelectLabel>Available Funds</SelectLabel>
                                     {isLoadingFunds ? (
                                         <SelectItem value="loading" disabled>Loading funds...</SelectItem>
                                     ) : (
@@ -100,20 +115,20 @@ export default function FundsDeposit({ refreshHistory }) {
                         </Select>
                     </div>
                     <div className="flex flex-col space-y-1.5">
-                        <Label htmlFor="amount">Amount</Label>
+                        <Label htmlFor="amount">Investment Amount</Label>
                         <MoneyInput
                             id="amount"
                             prefix="£"
                             allowNegativeValue={false}
                             placeholder="Specify amount to deposit into selected fund."
                             decimalsLimit={2}
-                            value={selectedAmount}
-                            onValueChange={(value, name, values) => setSelectedAmount(values.float)}
+                            value={fundSelections[0].amount || ''}
+                            onValueChange={(value, name, values) => handleAmountChange(values.float || 0)}
                         />
                     </div>
                     <Button
                         type="submit"
-                        disabled={!selectedFund || selectedAmount <= 0 || isSubmitting}
+                        disabled={!fundSelections[0].fundId || fundSelections[0].amount <= 0 || isSubmitting}
                     >
                         {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         {isSubmitting ? 'Processing...' : 'Deposit'}

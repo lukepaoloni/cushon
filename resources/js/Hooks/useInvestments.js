@@ -32,6 +32,7 @@ export default function useInvestment() {
         } catch (err) {
             setError(err.message);
             console.error('Error creating investment:', err);
+            return null;
         } finally {
             setIsSubmitting(false);
         }

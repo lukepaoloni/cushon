@@ -46,8 +46,8 @@ export default function InvestmentHistory() {
                         <TableBody>
                             {investments.map((investment) => (
                                 <TableRow key={investment.id}>
-                                    <TableCell>{investment.fund.name}</TableCell>
-                                    <TableCell>{investment.formatted_amount}</TableCell>
+                                    <TableCell>{investment.allocations[0].fund.name}</TableCell>
+                                    <TableCell>{investment.allocations[0].formatted_amount}</TableCell>
                                     <TableCell className="text-right">{investment.time_ago}</TableCell>
                                 </TableRow>
                             ))}

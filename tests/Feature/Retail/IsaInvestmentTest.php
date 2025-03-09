@@ -42,12 +42,15 @@ class IsaInvestmentTest extends TestCase
         $response->assertStatus(Response::HTTP_CREATED);
 
         // AND the response should include the investment details
-        $response->assertJsonPath('data.fund.id', $fund->id);
-        $response->assertJsonPath('data.amount', 25000);
+        $response->assertJsonPath('data.allocations.0.fund.id', $fund->id);
+        $response->assertJsonPath('data.allocations.0.amount', 25000);
 
         // AND the investment should be stored in the database
         $this->assertDatabaseHas('investments', [
             'user_id' => auth()->id(),
+            'amount' => Money::fromPounds(25000)->getAmountInPennies(),
+        ]);
+        $this->assertDatabaseHas('fund_allocations', [
             'fund_id' => $fund->id,
             'amount' => Money::fromPounds(25000)->getAmountInPennies(),
         ]);
@@ -59,9 +62,12 @@ class IsaInvestmentTest extends TestCase
         $this->setupAuthenticatedUser();
         $fund = Fund::query()->where('name', 'Cushon Equities Fund')->firstOrFail();
         $investment = auth()->user()->investments()->create([
-            'fund_id' => $fund->id,
             'amount' => Money::fromPounds(25000)->getAmountInPennies(),
             'customer_type' => CustomerType::RETAIL,
+        ]);
+        $investment->allocations()->create([
+            'fund_id' => $fund->id,
+            'amount' => Money::fromPounds(25000)->getAmountInPennies(),
         ]);
 
         // WHEN I send a GET request to "/api/retail/isa/investments"
@@ -72,7 +78,7 @@ class IsaInvestmentTest extends TestCase
 
         // AND the response should include my investment details
         $response->assertJsonPath('data.0.id', $investment->id);
-        $response->assertJsonPath('data.0.fund.id', $fund->id);
+        $response->assertJsonPath('data.0.allocations.0.fund.id', $fund->id);
         $response->assertJsonPath('data.0.amount', 25000);
     }
 }
