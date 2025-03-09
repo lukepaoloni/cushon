@@ -198,3 +198,38 @@ The auto-authentication middleware provides several benefits:
 - Implemented database transactions to ensure atomicity of investment operations
 - Used locking to prevent race conditions
 - Added retry mechanism for handling potential deadlocks in high-concurrency scenarios
+
+### Improvements
+
+#### BDD Testing Enhancement
+- Implement Behat/Codeception for BDD-style testing to better match the existing Gherkin scenarios in the README
+- Current tests follow a more traditional PHPUnit approach but could benefit from a more explicit BDD structure
+
+#### API Optimisation
+- Reduce API calls when switching to investment history tab - currently a new fetch is triggered each time
+- Implement caching or state persistence between tab switches
+
+#### Money Handling
+- Add a custom Money cast for Eloquent to eliminate repetitive conversion code ($amount->getAmountInPennies() when saving, $amount->getAmountInPounds() when retrieving)
+- The current Money value object implementation is good but could be integrated better with the ORM
+
+#### Internationalization
+- Make frontend components translatable - currently all text is hardcoded
+- Implement locale-aware formatting for currency values
+
+#### Architectural Considerations
+- Consider domain-driven design for future scaling
+- The current MVC architecture works but may limit flexibility as complexity grows
+
+#### Audit & Logging
+- Add comprehensive logging of financial operations, especially when placing investments
+- Implement an audit trail for tracking user activity
+
+#### Controller Refactoring
+- `InvestmentController::store` is handling too many responsibilities
+- Refactor into a service class to improve separation of concerns and testability
+
+#### Transaction Safety
+- Add test coverage for investment concurrency issues
+- Ensure that partial completion doesn't occur during transaction failures
+- Implement fund locking to prevent concurrent updates to the same fund
