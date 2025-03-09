@@ -14,14 +14,16 @@ import {
 import { MoneyInput } from "@/Components/ui/MoneyInput.jsx";
 import { Button } from "@/Components/ui/button.jsx";
 import { useState, useEffect } from "react";
-import { useFunds } from "@/Hooks";
+import { useFunds, useInvestment } from "@/Hooks";
 import { Alert, AlertDescription } from "@/Components/ui/alert";
+import { Loader2 } from "lucide-react";
 
 export default function Funds() {
     const [selectedFund, setSelectedFund] = useState('');
     const [selectedAmount, setSelectedAmount] = useState(0);
 
     const { funds, isLoading: isLoadingFunds, error: fundsError, fetchFunds } = useFunds();
+    const { createInvestment, isSubmitting, error: investmentError, success } = useInvestment();
 
     useEffect(() => {
         fetchFunds();
@@ -29,6 +31,14 @@ export default function Funds() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (selectedFund && selectedAmount > 0) {
+            const data = await createInvestment(selectedFund, selectedAmount);
+
+            if (data) {
+                setSelectedFund('');
+                setSelectedAmount(0);
+            }
+        }
     };
 
     return (
@@ -48,11 +58,18 @@ export default function Funds() {
                             <CardTitle>Deposit</CardTitle>
                         </CardHeader>
                         <CardContent>
+                            {success && (
+                                <Alert className="mb-4 bg-green-50 text-green-800">
+                                    <AlertDescription>
+                                        Investment created successfully!
+                                    </AlertDescription>
+                                </Alert>
+                            )}
 
-                            {(fundsError) && (
+                            {(fundsError || investmentError) && (
                                 <Alert className="mb-4 bg-red-50 text-red-800">
                                     <AlertDescription>
-                                        {fundsError}
+                                        {fundsError || investmentError}
                                     </AlertDescription>
                                 </Alert>
                             )}
@@ -95,14 +112,15 @@ export default function Funds() {
                                         placeholder="Specify amount to deposit into selected fund."
                                         decimalsLimit={2}
                                         value={selectedAmount}
-                                        onValueChange={val => setSelectedAmount(val)}
+                                        onValueChange={(value, name, values) => setSelectedAmount(values.float)}
                                     />
                                 </div>
                                 <Button
                                     type="submit"
-                                    disabled={!selectedFund || selectedAmount <= 0}
+                                    disabled={!selectedFund || selectedAmount <= 0 || isSubmitting}
                                 >
-                                    Deposit
+                                    {isSubmitting && <Loader2 className="animate-spin" />}
+                                    {isSubmitting ? 'Processing...' : 'Deposit'}
                                 </Button>
                             </form>
                         </CardContent>
