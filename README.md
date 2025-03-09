@@ -45,9 +45,10 @@ DB_PASSWORD=
 
 Create a new database named `cushon` in DBngin.
 
-### 4. Run database migrations and seed initial data
+### 4. Generate key and run database migrations and seed initial data
 
 ```bash
+php artisan key:generate
 php artisan migrate
 php artisan db:seed
 ```
