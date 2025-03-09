@@ -14,12 +14,18 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class InvestmentController extends Controller
 {
     public function index()
     {
-        $investments = auth()->user()->investments()->with('allocations')->latest()->paginate(15);
+        $investments = auth()->user()->investments()
+            ->with('allocations.fund')
+            ->where('customer_type', CustomerType::RETAIL)
+            ->latest()
+            ->paginate(15);
+
         return new InvestmentCollection($investments);
     }
 
