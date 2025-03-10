@@ -1,4 +1,4 @@
-# Cushon Interview Task
+# Cushon
 
 ## Prerequisites
 
@@ -14,8 +14,8 @@
 ### 1. Clone the repository
 
 ```bash
-git clone git@github.com:lukepaoloni/cushon-interview-task.git
-cd cushon-interview-task
+git clone git@github.com:lukepaoloni/cushon.git
+cd cushon
 ```
 
 ### 2. Install backend dependencies
